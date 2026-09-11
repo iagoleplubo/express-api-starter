@@ -13,17 +13,17 @@ const db = new sqlite3.Database(dbFile, (err) => {
     console.log('Connected to sqlite database:', dbFile);
 });
 
-// Initialize products table if not exists
+// Initialize pizzas table if not exists
 const initSql = `
-CREATE TABLE IF NOT EXISTS products (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  description TEXT,
-  imageUrl TEXT,
-  price REAL NOT NULL,
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now'))
-);
+    CREATE TABLE IF NOT EXISTS pizzas (
+                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                          name TEXT NOT NULL UNIQUE,
+                                          ingredients TEXT,
+                                          imageUrl TEXT,
+                                          price REAL NOT NULL,
+                                          created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+        );
 `;
 
 db.serialize(() => {
