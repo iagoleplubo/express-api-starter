@@ -2,6 +2,7 @@
 const { validationResult } = require('express-validator');
 const Ingredient = require('./Ingredient');
 
+// Cree un ingredient apres validation des champs
 exports.create = async (req, res, next) => {
     try {
         const errors = validationResult(req);
@@ -17,6 +18,7 @@ exports.create = async (req, res, next) => {
     }
 };
 
+// Liste tous les ingredients
 exports.findAll = async (req, res, next) => {
     try {
         const ingredients = await Ingredient.findAll();
@@ -26,6 +28,7 @@ exports.findAll = async (req, res, next) => {
     }
 };
 
+// Retourne un ingredient, 404 s'il n'existe pas
 exports.findOne = async (req, res, next) => {
     try {
         const id = Number(req.params.id);
@@ -40,6 +43,7 @@ exports.findOne = async (req, res, next) => {
     }
 };
 
+// Met a jour un ingredient existant
 exports.update = async (req, res, next) => {
     try {
         const errors = validationResult(req);
@@ -60,6 +64,7 @@ exports.update = async (req, res, next) => {
     }
 };
 
+// Supprime un ingredient, 204 sans contenu si succes
 exports.delete = async (req, res, next) => {
     try {
         const id = Number(req.params.id);
@@ -72,4 +77,17 @@ exports.delete = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+};
+
+/**
+ * Resout une liste de noms d'ingredients en entites existantes.
+ * Appelee par le controleur Pizzas : celui-ci ne touche jamais
+ * l'entite Ingredient directement.
+ * Retourne { found: Ingredient[], missing: string[] }
+ */
+exports.resolveByNames = async (names = []) => {
+    const found = await Ingredient.findByNames(names);
+    const foundNames = found.map((i) => i.name);
+    const missing = names.filter((n) => !foundNames.includes(n));
+    return { found, missing };
 };

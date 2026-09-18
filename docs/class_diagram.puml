@@ -1,22 +1,36 @@
 @startuml
-title Products API - Class Diagram
+title Foodtruck API - Class Diagram
 
-class Product {
+class Pizza {
   +int id
   +string name
-  +string description
   +string imageUrl
   +float price
   +string created_at
   +string updated_at
-  +static create(obj) : Promise<Product>
-  +static findAll() : Promise<Product[]>
-  +static findById(id) : Promise<Product|null>
-  +static update(id, obj) : Promise<Product|null>
+  +static create(obj) : Promise<Pizza>
+  +static findAll() : Promise<Pizza[]>
+  +static findById(id) : Promise<Pizza|null>
+  +static update(id, obj) : Promise<Pizza|null>
+  +static delete(id) : Promise<number>
+  +static addIngredients(pizzaId, ingredientIds) : Promise<void>
+}
+
+class Ingredient {
+  +int id
+  +string name
+  +float price
+  +string created_at
+  +string updated_at
+  +static create(obj) : Promise<Ingredient>
+  +static findAll() : Promise<Ingredient[]>
+  +static findById(id) : Promise<Ingredient|null>
+  +static findByNames(names) : Promise<Ingredient[]>
+  +static update(id, obj) : Promise<Ingredient|null>
   +static delete(id) : Promise<number>
 }
 
-class ProductController {
+class PizzasController {
   +create(req, res)
   +findAll(req, res)
   +findOne(req, res)
@@ -24,15 +38,34 @@ class ProductController {
   +delete(req, res)
 }
 
-class Router {
-  +GET /api/products
-  +POST /api/products
-  +GET /api/products/:id
-  +PUT /api/products/:id
-  +DELETE /api/products/:id
+class IngredientsController {
+  +create(req, res)
+  +findAll(req, res)
+  +findOne(req, res)
+  +update(req, res)
+  +delete(req, res)
+  +resolveByNames(names) : Promise<Ingredient[]>
 }
 
-ProductController -- Product : uses >
-Router --> ProductController : routes to >
+class Router {
+  +GET /api/pizzas
+  +POST /api/pizzas
+  +GET /api/pizzas/:id
+  +PUT /api/pizzas/:id
+  +DELETE /api/pizzas/:id
+  +GET /api/ingredients
+  +POST /api/ingredients
+  +GET /api/ingredients/:id
+  +PUT /api/ingredients/:id
+  +DELETE /api/ingredients/:id
+}
+
+Pizza "1..*" -- "1..*" Ingredient : contient >
+
+PizzasController -- Pizza : uses >
+IngredientsController -- Ingredient : uses >
+PizzasController ..> IngredientsController : resout les ingredients >
+Router --> PizzasController : routes to >
+Router --> IngredientsController : routes to >
 
 @enduml

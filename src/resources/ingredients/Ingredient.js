@@ -2,9 +2,10 @@
 const db = require('../../config/database');
 
 class Ingredient {
+    // Insere un ingredient puis retourne la ligne creee
     static create({ name, price }) {
         const sql = `INSERT INTO ingredients (name, price, created_at, updated_at)
-                 VALUES (?, ?, datetime('now'), datetime('now'))`;
+                     VALUES (?, ?, datetime('now'), datetime('now'))`;
         const params = [name, price];
 
         return new Promise((resolve, reject) => {
@@ -35,6 +36,22 @@ class Ingredient {
         });
     }
 
+    // Recherche plusieurs ingredients par leurs noms
+    // Sert a verifier que tous les ingredients d'une pizza existent
+    static findByNames(names = []) {
+        if (names.length === 0) return Promise.resolve([]);
+        const placeholders = names.map(() => '?').join(', ');
+        const sql = `SELECT * FROM ingredients WHERE name IN (${placeholders})`;
+
+        return new Promise((resolve, reject) => {
+            db.all(sql, names, (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows);
+            });
+        });
+    }
+
+    // COALESCE garde la valeur existante si le champ n'est pas fourni
     static update(id, { name, price }) {
         const sql = `
       UPDATE ingredients
@@ -54,6 +71,7 @@ class Ingredient {
         });
     }
 
+    // Retourne le nombre de lignes supprimees (0 si introuvable)
     static delete(id) {
         const sql = `DELETE FROM ingredients WHERE id = ?`;
         return new Promise((resolve, reject) => {

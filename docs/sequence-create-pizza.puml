@@ -1,0 +1,54 @@
+@startuml
+title Foodtruck API - Sequence de creation d'une pizza
+
+actor Client
+participant "Router" as R
+participant "PizzasController" as PC
+participant "IngredientsController" as IC
+participant "Ingredient" as IE
+participant "Pizza" as PE
+database "SQLite" as DB
+
+Client -> R : POST /api/pizzas\n{name, imageUrl, price, ingredients[]}
+R -> PC : create(req, res)
+
+group Validation des parametres
+  PC -> PC : validationResult(req)
+  alt Parametres manquants ou type invalide
+    PC --> Client : 400 Bad Request\n{errors}
+  end
+end
+
+group Verification de l'unicite du nom
+  PC -> PE : findByName(name)
+  PE -> DB : SELECT * FROM pizzas WHERE name = ?
+  DB --> PE : row | null
+  PE --> PC : Pizza | null
+  alt Nom deja utilise
+    PC --> Client : 409 Conflict\n{error: "Pizza name already exists"}
+  end
+end
+
+group Verification de l'existence des ingredients
+  PC -> IC : resolveByNames(ingredients[])
+  IC -> IE : findByNames(names)
+  IE -> DB : SELECT * FROM ingredients WHERE name IN (...)
+  DB --> IE : rows
+  IE --> IC : Ingredient[]
+  IC --> PC : Ingredient[] | manquants
+  alt Un ou plusieurs ingredients inexistants
+    PC --> Client : 422 Unprocessable Entity\n{error: "Unknown ingredients"}
+  end
+end
+
+group Creation de la pizza
+  PC -> PE : create({name, imageUrl, price})
+  PE -> DB : INSERT INTO pizzas (...)
+  DB --> PE : lastID
+  PE -> DB : INSERT INTO pizzas_ingredients (pizza_id, ingredient_id)
+  DB --> PE : OK
+  PE --> PC : Pizza
+  PC --> Client : 201 Created\n{pizza}
+end
+
+@enduml

@@ -1,4 +1,4 @@
-// routes/pizzasRoutes.js
+// resources/pizzas/pizzasRoutes.js
 const express = require('express');
 const { body, param } = require('express-validator');
 const pizzasController = require('./pizzasController');
@@ -9,7 +9,7 @@ const router = express.Router();
  * @openapi
  * /api/pizzas:
  *   get:
- *     summary: Retrieve a list of pizzas
+ *     summary: Retrieve a list of pizzas with their ingredients
  *     responses:
  *       200:
  *         description: A list of pizzas
@@ -24,20 +24,27 @@ const router = express.Router();
  *             required:
  *               - name
  *               - price
+ *               - ingredients
  *             properties:
  *               name:
- *                 type: string
- *               ingredients:
  *                 type: string
  *               imageUrl:
  *                 type: string
  *               price:
  *                 type: number
+ *               ingredients:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       201:
  *         description: Pizza created
  *       400:
  *         description: Invalid input
+ *       409:
+ *         description: Pizza name already exists
+ *       422:
+ *         description: Unknown ingredients
  */
 
 /**
@@ -73,12 +80,14 @@ const router = express.Router();
  *             properties:
  *               name:
  *                 type: string
- *               ingredients:
- *                 type: string
  *               imageUrl:
  *                 type: string
  *               price:
  *                 type: number
+ *               ingredients:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
  *         description: Pizza updated
@@ -86,6 +95,10 @@ const router = express.Router();
  *         description: Invalid input
  *       404:
  *         description: Pizza not found
+ *       409:
+ *         description: Pizza name already exists
+ *       422:
+ *         description: Unknown ingredients
  *   delete:
  *     summary: Delete a pizza by ID
  *     parameters:
@@ -101,14 +114,13 @@ const router = express.Router();
  *         description: Pizza not found
  */
 
-/**
- * Validation rules
- */
+// Regles de validation : ingredients est un tableau de noms non vide
 const createAndUpdateValidations = [
     body('name').isString().notEmpty().withMessage('name is required'),
-    body('ingredients').optional().isString(),
     body('imageUrl').optional().isString().isURL().withMessage('imageUrl must be a valid URL'),
     body('price').isFloat({ gt: 0 }).withMessage('price must be a positive number'),
+    body('ingredients').isArray({ min: 1 }).withMessage('ingredients must be a non-empty array'),
+    body('ingredients.*').isString().withMessage('each ingredient must be a string'),
 ];
 
 router.get('/', pizzasController.findAll);

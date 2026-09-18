@@ -1,0 +1,34 @@
+@startuml
+title Foodtruck API - Modele Logique de Donnees
+
+hide circle
+skinparam linetype ortho
+
+entity "pizzas" as pizzas {
+  * id : INTEGER <<PK>>
+  --
+  * name : TEXT <<UK>>
+  imageUrl : TEXT
+  * price : REAL
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity "pizzas_ingredients" as pivot {
+  * pizza_id : INTEGER <<PK, FK>>
+  * ingredient_id : INTEGER <<PK, FK>>
+}
+
+entity "ingredients" as ingredients {
+  * id : INTEGER <<PK>>
+  --
+  * name : TEXT <<UK>>
+  * price : REAL
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+pizzas ||--o{ pivot
+ingredients ||--o{ pivot
+
+@enduml
